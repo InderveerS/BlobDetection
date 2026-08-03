@@ -50,7 +50,7 @@ bool cameraInit() {
 
     sensor_t *s = esp_camera_sensor_get();
     if (s) {
-        s->set_vflip(s, 0);         // set to 1 if image is upside down
+        s->set_vflip(s, 1);         // set to 1 if image is upside down
         s->set_hmirror(s, 0);       // see cameraSetMirror() -- affects the sign of cx
         // Auto everything at boot so the sensor can converge on the venue
         // lighting. Freeze it with `lock` once you've tuned; see camera_setup.h.

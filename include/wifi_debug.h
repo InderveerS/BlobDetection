@@ -39,7 +39,7 @@
 #define PREVIEW_W (FRAME_W / 2)
 #define PREVIEW_H (FRAME_H / 2)
 #define PREVIEW_JPEG_QUALITY 55       // 1-100, higher is better and slower
-#define STREAM_DEFAULT_FPS    5
+#define STREAM_DEFAULT_FPS    10
 
 #ifdef ENABLE_WIFI_DEBUG
 
