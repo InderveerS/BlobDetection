@@ -81,6 +81,16 @@ static void downscaleInto(uint8_t *dst, const uint8_t *src) {
 }
 
 static void drawOverlay(uint8_t *buf, const DetectResult &r) {
+    // 1. Calculate the static ROI boundary based on the preview's resolution
+    int roi_x0 = 32/2;                     // Chop 10% off the left
+    int roi_y0 = 120/2;                      // Chop top 50%
+    int roi_x1 = 288/2;   // Chop 10% off the right
+    int roi_y1 = 239/2;                      // Bottom of the screen                     // Bottom of the screen
+
+    // 2. Draw the boundary box first so it sits behind the crosshairs
+    drawRect(buf, roi_x0, roi_y0, roi_x1, roi_y1, 000000); 
+
+    // 3. Draw the detected blobs
     for (int c = 0; c < COLOR_COUNT; c++) {
         const ColorDetection &d = r.color[c];
         if (!d.found) continue;
