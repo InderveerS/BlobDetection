@@ -166,7 +166,7 @@ static uint8_t scoreCandidate(const BlobComponent &b, const ColorLimits &lim, bo
 
     // Core fraction carries the most weight: it is the cleanest separator
     // between a real object and something that merely clips the range edge.
-    int s = (corePct * 45 + fillScore * 30 + areaScore * 25) / 100;
+    int s = (corePct * 45 + fillScore * 25 + areaScore * 30) / 100;
 
     // Partially out of frame is still a real target - just less certain,
     // because area and fill are both understated when clipped.

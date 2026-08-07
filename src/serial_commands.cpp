@@ -155,7 +155,7 @@ static void printHelp() {
     Serial.println("  verbose <0|1|2>                  0=silent 1=~10Hz 2=every frame");
     Serial.println("  reset <color|all>                reload compiled-in defaults");
     Serial.println("  dump                             print current camera's profiles as C code");
-    Serial.println("  params                           show active color + range");
+    Serial.println("  params                a           show active color + range");
     Serial.println("  camera                           show detected camera");
     Serial.println("False-positive rejection:");
     Serial.println("  limits                           show ROI, per-color limits, tracker settings");
