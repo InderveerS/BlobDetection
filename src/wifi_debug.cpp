@@ -1,9 +1,7 @@
 #include "wifi_debug.h"
 
-// The whole file is conditional, and [env:competition] additionally excludes it
-// from the build via build_src_filter. That exclusion is what actually strips
-// the radio: PlatformIO's dependency finder text-scans for #include and would
-// otherwise link the entire WiFi stack from the line below, disabled or not.
+// [env:competition] excludes this file from the build entirely; see
+// platformio.ini for why the #ifdef alone isn't enough.
 #ifdef ENABLE_WIFI_DEBUG
 
 #include <Arduino.h>
@@ -11,9 +9,7 @@
 #include <esp_http_server.h>
 #include "esp_heap_caps.h"
 #include "img_converters.h"
-#include "frame_config.h"
 #include "profiles.h"
-#include <string.h>
 
 static httpd_handle_t g_httpPage   = nullptr;   // port 80
 static httpd_handle_t g_httpStream = nullptr;   // port 81
@@ -80,17 +76,14 @@ static void downscaleInto(uint8_t *dst, const uint8_t *src) {
     }
 }
 
+// Fixed ROI guide box, in full-frame coordinates. Hard-coded: it does not
+// follow the `roi` command.
+static const int GUIDE_X0 = 65, GUIDE_Y0 = 105, GUIDE_X1 = 255, GUIDE_Y1 = 239;
+
 static void drawOverlay(uint8_t *buf, const DetectResult &r) {
-    // 1. Calculate the static ROI boundary based on the preview's resolution
-    int roi_x0 = 65/2;                     
-    int roi_y0 = 105/2;                      // Chop top 50%
-    int roi_x1 = 255/2; 
-    int roi_y1 = 239/2;                      // Bottom of the screen                     // Bottom of the screen
+    // Drawn first so the detections sit on top of it.
+    drawRect(buf, GUIDE_X0 / 2, GUIDE_Y0 / 2, GUIDE_X1 / 2, GUIDE_Y1 / 2, 0x0000);
 
-    // 2. Draw the boundary box first so it sits behind the crosshairs
-    drawRect(buf, roi_x0, roi_y0, roi_x1, roi_y1, 000000); 
-
-    // 3. Draw the detected blobs
     for (int c = 0; c < COLOR_COUNT; c++) {
         const ColorDetection &d = r.color[c];
         if (!d.found) continue;
@@ -388,8 +381,6 @@ void wifiDebugStop() {
     g_streamClients = 0;
     Serial.println("[WIFI] Off. Radio down, vision back to full speed.");
 }
-
-bool wifiDebugRunning() { return g_running; }
 
 void setStreamFps(int fps) {
     if (fps < 1)  fps = 1;

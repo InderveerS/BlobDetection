@@ -6,7 +6,6 @@
 static CameraId g_camId = CAM_UNKNOWN;
 static HsvRange g_active[COLOR_COUNT];
 static ColorId  g_activeDetectColor = COLOR_YELLOW;  // arbitrary boot default
-static int      g_minPx = 300;
 
 const char* colorName(ColorId c) {
     switch (c) {
@@ -40,9 +39,8 @@ CameraId getActiveCameraId() { return g_camId; }
 
 HsvRange getColorProfile(ColorId c) { return g_active[c]; }
 
-// Every mutation rebuilds the LUT. Doing it here rather than at the call sites
-// means "I changed a profile but forgot to rebuild" - which would show up as
-// detection silently ignoring your edit - simply cannot happen.
+// Every mutation rebuilds the LUT here rather than at the call sites, so an
+// edit can never be silently ignored by detection.
 void setColorProfile(ColorId c, const HsvRange &r) {
     g_active[c] = r;
     lutRebuild();
@@ -61,9 +59,6 @@ void resetAllToDefaults() {
     for (int i = 0; i < COLOR_COUNT; i++) g_active[i] = def[i];
     lutRebuild();
 }
-
-int  getMinBlobPx() { return g_minPx; }
-void setMinBlobPx(int px) { g_minPx = px; }
 
 void printRange(const HsvRange &r) {
     Serial.printf("H:%d-%d%s  S:%d-%d  V:%d-%d\n",

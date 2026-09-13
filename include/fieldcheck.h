@@ -21,6 +21,4 @@
 // ================================================================
 
 void fieldcheckStart(int seconds);
-bool fieldcheckActive();
 void fieldcheckSample(const DetectResult &r, const FilterResult &f, const BlobScanStats &st);
-void fieldcheckAbort();

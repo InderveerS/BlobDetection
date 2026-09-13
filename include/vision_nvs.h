@@ -1,6 +1,4 @@
 #pragma once
-#include <stdbool.h>
-#include "color_types.h"
 
 // ================================================================
 // Persistence to flash (NVS).

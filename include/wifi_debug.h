@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "frame_config.h"
 #include "detect_result.h"
 #include "blob_filter.h"
 #include "blob_detect.h"
@@ -12,9 +13,9 @@
 // its own, so the only way it runs during a match is if somebody types the
 // command during the match. Turning it on prints a loud warning.
 //
-// To remove it from the binary entirely for competition, build with
-// -UENABLE_WIFI_DEBUG (see platformio.ini). Everything below then compiles to
-// nothing and the commands report that it wasn't built in.
+// To remove it from the binary entirely, build [env:competition] (see
+// platformio.ini). The stubs at the bottom of this file then stand in, and
+// the commands report that it wasn't built in.
 //
 // Why core 0: WiFi's own tasks are pinned to core 0 by default in ESP-IDF, and
 // the vision pipeline owns core 1. The HTTP servers are pinned to core 0 too,
@@ -47,7 +48,6 @@ bool wifiDebugStartAP();
 bool wifiDebugStartSTA(const char *ssid, const char *pass);
 void wifiDebugStop();
 void wifiDebugStatus();
-bool wifiDebugRunning();
 
 // Called from the vision loop every frame. Both are non-blocking: if the
 // encoder is busy or no client is connected, they return immediately and the
@@ -70,7 +70,6 @@ inline void wifiDebugStatus() {
 inline bool wifiDebugStartAP()                          { wifiDebugStatus(); return false; }
 inline bool wifiDebugStartSTA(const char *, const char *) { wifiDebugStatus(); return false; }
 inline void wifiDebugStop()                             {}
-inline bool wifiDebugRunning()                          { return false; }
 inline void wifiDebugPublish(const DetectResult &, const FilterResult &,
                              const BlobScanStats &, float) {}
 inline void wifiDebugOfferFrame(const uint8_t *)        {}

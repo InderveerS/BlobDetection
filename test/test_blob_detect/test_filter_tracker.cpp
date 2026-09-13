@@ -2,7 +2,6 @@
 // Built and run by scripts/run_native_tests.ps1 alongside test_blob_detect.cpp.
 
 #include <unity.h>
-#include <string.h>
 #include "blob_filter.h"
 #include "tracker.h"
 #include "detect_result.h"

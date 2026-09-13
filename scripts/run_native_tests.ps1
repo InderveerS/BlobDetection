@@ -79,11 +79,20 @@ $sources = @(
 $exe = Join-Path $build "test_blob_detect.exe"
 
 Write-Host "Compiling..." -ForegroundColor Cyan
-& cl /nologo /EHsc /std:c++17 /W3 /O2 `
-     /I (Join-Path $root "include") /I $unity `
-     /Fo:"$build\" /Fe:"$exe" `
-     $sources
-if ($LASTEXITCODE -ne 0) { throw "Compilation failed." }
+# Compile from inside the build dir so object files land there. Passing it as
+# /Fo:"<dir>\" breaks on paths with spaces: cl reads the trailing \" as an
+# escaped quote and mangles every argument after it.
+Push-Location $build
+try {
+    & cl /nologo /EHsc /std:c++17 /W3 /O2 `
+         /I (Join-Path $root "include") /I $unity `
+         /Fe:$exe `
+         $sources
+    $compileRc = $LASTEXITCODE
+} finally {
+    Pop-Location
+}
+if ($compileRc -ne 0) { throw "Compilation failed." }
 
 Write-Host ""
 Write-Host "Running..." -ForegroundColor Cyan

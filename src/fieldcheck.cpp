@@ -10,12 +10,12 @@ struct ColorStats {
     uint32_t edgeFrames;
 };
 
-static bool       g_active = false;
-static uint32_t   g_endMs  = 0;
-static uint32_t   g_startMs = 0;
-static uint32_t   g_frames = 0;
+static bool       g_active        = false;
+static uint32_t   g_endMs         = 0;
+static uint32_t   g_startMs       = 0;
+static uint32_t   g_frames        = 0;
 static uint32_t   g_scanMicrosSum = 0;
-static uint32_t   g_capHits = 0;
+static uint32_t   g_capHits       = 0;
 static uint32_t   g_rejected[REJ_REASON_COUNT];
 static uint32_t   g_rejectedMaxPx[REJ_REASON_COUNT];
 static ColorStats g_stats[COLOR_COUNT];
@@ -38,14 +38,6 @@ void fieldcheckStart(int seconds) {
     }
 
     Serial.printf("\n[FIELDCHECK] Sampling for %d s -- hold the scene steady...\n", seconds);
-}
-
-bool fieldcheckActive() { return g_active; }
-
-void fieldcheckAbort() {
-    if (!g_active) return;
-    g_active = false;
-    Serial.println("[FIELDCHECK] Aborted.");
 }
 
 static void report() {

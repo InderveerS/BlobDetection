@@ -40,15 +40,15 @@ static inline bool    lutIsCore (uint8_t entry) { return (entry & LUT_CORE_BIT) 
 // before detection ever runs.
 void lutBuild(uint8_t *lut, const HsvRange *profiles);
 
-// On-target convenience wrapper around the static table.
+// On-target wrappers around the static table.
 void           lutRebuild();      // rebuild from the current active profiles
 const uint8_t* lutData();
+uint32_t       lutLastBuildMicros();
 
 // Rebuilds the shared table from arbitrary profiles. Autotune uses this to
 // temporarily load its search priors, then calls lutRebuild() to restore.
 // Costs no extra RAM, and detection doesn't run while tuning anyway.
 void lutBuildCustom(const HsvRange *profiles);
-uint32_t       lutLastBuildMicros();
 
 // Diagnostics: how many of the 65536 possible pixel values map to each colour.
 // A colour claiming a huge slice of colour space is a profile that will pick

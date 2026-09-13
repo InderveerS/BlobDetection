@@ -95,5 +95,5 @@ uint32_t    linkSentCount();
 uint32_t    linkDroppedCount();   // lines refused because they wouldn't fit
 const char* linkLastInbound();    // most recent line received from the peer
 
-// Formats a result into the wire line. Exposed for testing.
+// Formats a result into the wire line. Also used by `linkstatus`.
 int visionLinkFormat(const DetectResult &r, char *buf, int bufLen);

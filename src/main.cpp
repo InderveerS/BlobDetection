@@ -17,11 +17,10 @@
 #include "fieldcheck.h"
 #include "wifi_debug.h"
 
-uint32_t g_lastFpsMs  = 0;
-int      g_frameCount = 0;
-float    g_fps        = 0;
-uint32_t g_frameId    = 0;
-
+static uint32_t     g_lastFpsMs  = 0;
+static int          g_frameCount = 0;
+static float        g_fps        = 0;
+static uint32_t     g_frameId    = 0;
 static DetectResult g_result;
 
 const DetectResult& latestResult() { return g_result; }
@@ -86,7 +85,6 @@ void setup() {
     profilesInit(cam);       // also builds the colour LUT
     filterSetDefaults();
     trackerSetDefaults();
-    autotuneInit();
     visionLinkBegin();       // starts the core-0 task; failure is non-fatal
 
     // Compiled-in defaults first, then anything saved for this sensor on top.
@@ -127,8 +125,6 @@ static void printResult(const DetectResult &r, const BlobScanStats &st, const Fi
         Serial.print("  rej:");
         for (int i = 1; i < REJ_REASON_COUNT; i++)
             if (f.rejected[i])
-                // The size of the biggest one rejected is what tells you where
-                // to move the threshold.
                 Serial.printf(" %s=%u(max %upx)", rejectReasonName(i),
                               f.rejected[i], (unsigned)f.rejectedMaxPx[i]);
     }
@@ -151,7 +147,6 @@ void loop() {
         return;
     }
 
-    // FPS counter
     g_frameCount++;
     uint32_t now = millis();
     if (now - g_lastFpsMs >= 1000) {

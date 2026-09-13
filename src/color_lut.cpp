@@ -1,6 +1,5 @@
 #include "color_lut.h"
 #include "hsv_convert.h"
-#include <string.h>
 
 // lutBuild() is pure and host-testable. Only the convenience wrapper that
 // reads the live profile table and times itself needs Arduino, so that part is

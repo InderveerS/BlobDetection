@@ -1,5 +1,5 @@
 // Host-side tests for the connected-component scanner and the colour LUT.
-//   pio test -e native
+// Run with scripts/run_native_tests.ps1 (or `pio test -e native` with a gcc).
 //
 // These use a hand-built LUT rather than the real profiles: the point is to
 // test the CCA geometry with unambiguous inputs, so "pixel value 1 is red,
@@ -7,7 +7,6 @@
 // readable.
 
 #include <unity.h>
-#include <string.h>
 #include <stdlib.h>
 #include "blob_detect.h"
 #include "color_lut.h"
@@ -54,9 +53,8 @@ void setUp(void) {
 void tearDown(void) {}
 
 // ---------------------------------------------------------------
-// Two separate blobs of the same colour must stay separate. This is the case
-// the old frame-wide-average detector got wrong: it reported one centroid in
-// the empty space between them.
+// Two separate blobs of the same colour must stay separate, never averaged
+// into one centroid in the empty space between them.
 // ---------------------------------------------------------------
 static void test_two_blobs_stay_separate(void) {
     fillRect(20, 20, 39, 39, PX_RED);      // 20x20 at (20,20), centre (29.5, 29.5)
@@ -131,7 +129,6 @@ static void test_noise_never_looks_like_a_target(void) {
 
     BlobComponent c[MAX_COMPONENTS];
     BlobScanStats st;
-    setMinRunLength(3);
     int n = scan(c, MAX_COMPONENTS, &st);
 
     // Whatever survives must be small enough that a modest area gate removes it.
@@ -244,8 +241,7 @@ static void test_empty_frame(void) {
 
 // ---------------------------------------------------------------
 // The real LUT builder: the four colours must come out mutually exclusive, and
-// a neutral grey must match nothing. Grey mattering here is the bit-replication
-// fix - before it, white converted to S=4/H=120 and read as green.
+// a neutral grey must match nothing (see test_white_has_zero_saturation).
 // ---------------------------------------------------------------
 static void test_lut_colours_are_mutually_exclusive(void) {
     HsvRange profiles[COLOR_COUNT] = {

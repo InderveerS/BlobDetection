@@ -3,7 +3,7 @@
 
 // Ballpark starting points. They want setting at the venue against the real
 // course - `limits` and `fieldcheck` exist for exactly that.
-#define DEF_MIN_AREA        300u     // matches the old minBlobPx default
+#define DEF_MIN_AREA        300u
 #define DEF_MAX_AREA      25000u     // ~1/3 of a QVGA frame: a wall or a person up close
 #define DEF_MIN_FILL_PCT     35
 #define DEF_MIN_ASPECT      30       // 0.30 w/h
@@ -193,11 +193,10 @@ void blobFilter(BlobComponent *comps, int n, FilterResult &out) {
         if (comps[i].pixels >= (uint32_t)g_minFragmentPx) comps[kept++] = comps[i];
 
     static uint8_t fragCount[MAX_COMPONENTS];
-    int before = kept;
-    int m      = mergeFragments(comps, kept, g_mergeGap, fragCount);
-    out.mergedAway = (uint16_t)(before - m);
+    int m = mergeFragments(comps, kept, g_mergeGap, fragCount);
+    out.mergedAway = (uint16_t)(kept - m);
 
-    ScanRoi roi = g_roi;
+    const ScanRoi &roi = g_roi;
 
     for (int i = 0; i < m; i++) {
         BlobComponent &b = comps[i];

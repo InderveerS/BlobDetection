@@ -5,10 +5,6 @@
 // ================================================================
 // Single-pass connected-component analysis over an RGB565 frame.
 //
-// Replaces the old detectBlob(), which averaged every matching pixel in the
-// frame into one centroid - so two objects, or one object plus a background
-// wash, produced a centroid pointing at the empty space between them.
-//
 // Algorithm: per row, run-length encode the LUT-classified pixels; link each
 // run to overlapping same-colour runs in the row above via union-find. One
 // raster pass, all four colours at once. Runs are the unit of work, so the

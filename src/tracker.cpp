@@ -34,7 +34,7 @@ static inline int popcount16(uint16_t v) {
     return c;
 }
 
-void trackerReset() {
+static void trackerReset() {
     for (int c = 0; c < COLOR_COUNT; c++) {
         g_track[c].active    = false;
         g_track[c].confirmed = false;

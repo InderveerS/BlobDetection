@@ -1,7 +1,6 @@
 #include "serial_commands.h"
 #include "profiles.h"
 #include "autotune.h"
-#include "color_types.h"
 #include "frame_config.h"
 #include "vision_output.h"
 #include "blob_detect.h"
@@ -22,14 +21,12 @@
 // ================================================================
 // Non-blocking line reader.
 //
-// The old code used Serial.readStringUntil('\n'), which blocks for up to the
-// Stream timeout (1000 ms by default) whenever a line arrives in pieces -
-// Serial.available() only promises >=1 byte, not a whole line. One stray byte
-// on the wire froze the vision loop for a full second. On a moving robot that
-// is a collision.
+// Serial.readStringUntil('\n') would block for up to the Stream timeout
+// whenever a line arrives in pieces - Serial.available() only promises >=1
+// byte, not a whole line - and stall the vision loop.
 //
 // This drains whatever has arrived, reassembles lines itself, and returns
-// immediately. Also drops String, so no heap churn on a long-running system.
+// immediately. No String, so no heap churn on a long-running system.
 // ================================================================
 #define CMD_BUF_LEN 96
 
@@ -69,12 +66,8 @@ static const char* readCommandLine() {
 }
 
 // ================================================================
-// Strict argument parsing.
-//
-// sscanf's return value was never checked before, so `set size` with no
-// argument left px at 0 and set the minimum blob size to 0 - which makes
-// every single frame report a detection. The trailing %c catches junk after
-// the numbers, so `set h 5 10 banana` is rejected rather than half-applied.
+// Strict argument parsing. The trailing %c catches junk after the numbers, so
+// `set h 5 10 banana` is rejected rather than half-applied.
 // ================================================================
 static bool parseOneInt(const char *s, int &a) {
     char extra;
@@ -90,9 +83,6 @@ static bool parseFourInts(const char *s, int &a, int &b, int &c, int &d) {
     char extra;
     return sscanf(s, "%d %d %d %d %c", &a, &b, &c, &d, &extra) == 4;
 }
-
-// "<colour> <n> [<n>]" - shared by the per-colour limit commands.
-static bool parseColorAndInts(const char *s, ColorId &c, int *vals, int count);
 
 static bool inBounds(int lo, int hi, int min, int max, const char *what) {
     if (lo < min || lo > max || hi < min || hi > max) {
@@ -110,6 +100,7 @@ static bool parseColorName(const char *s, ColorId &out) {
     return false;
 }
 
+// "<colour> <n> [<n>]" - shared by the per-colour limit commands.
 static bool parseColorAndInts(const char *s, ColorId &c, int *vals, int count) {
     char name[16];
     int  consumed = 0;
@@ -151,11 +142,10 @@ static void printHelp() {
     Serial.println("  set h <min> <max>                manual override, active color (H: 0-179, min>max wraps)");
     Serial.println("  set s <min> <max>                (S: 0-255)");
     Serial.println("  set v <min> <max>                (V: 0-255)");
-    Serial.println("  set size <min_px>                min blob pixels (detection only, not tuned)");
     Serial.println("  verbose <0|1|2>                  0=silent 1=~10Hz 2=every frame");
     Serial.println("  reset <color|all>                reload compiled-in defaults");
     Serial.println("  dump                             print current camera's profiles as C code");
-    Serial.println("  params                a           show active color + range");
+    Serial.println("  params                           show active color + range");
     Serial.println("  camera                           show detected camera");
     Serial.println("False-positive rejection:");
     Serial.println("  limits                           show ROI, per-color limits, tracker settings");
@@ -226,8 +216,7 @@ void handleSerialCommands() {
         ColorId active = getActiveDetectColor();
         Serial.printf("[%s] active color: %s  ", cameraName(getActiveCameraId()), colorName(active));
         printRange(getColorProfile(active));
-        Serial.printf("      min blob px: %d   verbose: %d (%s)\n",
-                      getMinBlobPx(), getVerbosity(), verbosityName(getVerbosity()));
+        Serial.printf("      verbose: %d (%s)\n", getVerbosity(), verbosityName(getVerbosity()));
     }
     else if (!strcmp(cmd, "camera")) {
         Serial.printf("Camera: %s\n", cameraName(getActiveCameraId()));
@@ -267,17 +256,6 @@ void handleSerialCommands() {
         } else {
             setVerbosity(v);
             Serial.printf("[SET] verbose = %d (%s)\n", getVerbosity(), verbosityName(getVerbosity()));
-        }
-    }
-    // `set size ` is checked before `set s ` would ever see it, and the
-    // trailing space in "set s " means "set size 500" can't match it anyway.
-    else if (!strncmp(cmd, "set size ", 9)) {
-        int px;
-        if (!parseOneInt(cmd + 9, px) || px < 1 || px > (int)FRAME_PIXELS) {
-            Serial.printf("Usage: set size <min_px>   (1-%u)\n", (unsigned)FRAME_PIXELS);
-        } else {
-            setMinBlobPx(px);
-            Serial.printf("[SET] min blob px = %d\n", getMinBlobPx());
         }
     }
     else if (!strncmp(cmd, "set h ", 6) || !strncmp(cmd, "set s ", 6) || !strncmp(cmd, "set v ", 6)) {

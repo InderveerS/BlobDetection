@@ -2,15 +2,6 @@
 #include "camera_pins.h"
 #include <Arduino.h>
 
-// Redefined locally (rather than relying on a specific esp32-camera header
-// path) so this compiles regardless of exact library version/layout.
-#ifndef OV2640_PID
-#define OV2640_PID 0x26
-#endif
-#ifndef OV3660_PID
-#define OV3660_PID 0x3660
-#endif
-
 bool cameraInit() {
     camera_config_t cfg = {};
     cfg.ledc_channel = LEDC_CHANNEL_0;

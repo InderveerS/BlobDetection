@@ -59,9 +59,8 @@ yellow.
 
 **Connected components.** Per row, runs of one colour are RLE'd and linked to
 overlapping same-colour runs in the row above via union-find, 8-connectivity.
-One raster pass, all four colours. The old detector had no such step: it
-averaged every matching pixel in the frame, so two objects produced a centroid
-pointing at the empty space between them.
+One raster pass, all four colours, so two separate objects stay two separate
+blobs instead of being averaged into one centroid between them.
 
 **Rejecting false positives**, in order of how much work each actually does:
 
@@ -215,7 +214,7 @@ Then open the IP it prints:
 Telemetry costs almost nothing. **Video costs frame rate** — it JPEG-encodes a
 half-resolution preview, and although that happens on core 0, it shares the
 PSRAM bus and the (core-shared) data cache with the camera DMA. Default target
-is 5 fps; `streamfps <1-15>` adjusts. The stream only does any work while a
+is 10 fps; `streamfps <1-15>` adjusts. The stream only does any work while a
 browser is actually connected.
 
 Two servers on two ports is deliberate: an MJPEG handler blocks its server task
@@ -229,7 +228,7 @@ pio run -e competition -t upload
 ```
 
 Same firmware with `wifi_debug.cpp` excluded from the build: no radio, no HTTP
-server, no JPEG encoder. 434 KB flash / 163 KB RAM versus 1056 KB / 194 KB for
+server, no JPEG encoder. 394 KB flash / 153 KB RAM versus 851 KB / 186 KB for
 the debug build.
 
 Note it excludes the **file**, not just the `-D` flag. PlatformIO's dependency
@@ -249,20 +248,6 @@ powershell -ExecutionPolicy Bypass -File scripts\run_native_tests.ps1
 
 (`pio test -e native` does the same thing but needs a gcc that Windows doesn't
 ship; the script drives Visual Studio's compiler instead.)
-
----
-
-## Build note
-
-`platformio.ini` pins `framework-arduinoespressif32` to an explicit URL. The
-"Final Robot Code" project uses the registry platform, whose framework package
-is versioned `3.20014.231204` — that outranks this one's `3.3.8` under semver,
-so PlatformIO periodically decides the old package is newer and deletes the one
-this project needs. Symptom is a build failing with `expected str, bytes or
-os.PathLike object, not NoneType`; **retry the build** and it reinstalls.
-
-Do **not** "fix" this by deleting the other package — the robot project needs
-it.
 
 ---
 

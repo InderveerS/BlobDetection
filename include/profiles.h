@@ -1,10 +1,8 @@
 #pragma once
 #include "color_types.h"
 
-// Centralized runtime configuration: active HSV profiles per color for
-// whichever camera was detected at boot, the currently-selected detect
-// color, and the min-blob-pixels detection knob. Everything else reads
-// and writes through here.
+// Active HSV profiles for whichever camera was detected at boot, plus the
+// colour that `set h/s/v` edits. Everything else reads and writes through here.
 
 void profilesInit(CameraId detectedCam);   // call once in setup(), after detectCameraId()
 
@@ -23,6 +21,3 @@ void resetAllToDefaults();
 
 void dumpProfiles();                 // print current camera's table as pasteable C code
 void printRange(const HsvRange &r);  // shared "H:.. S:.. V:.." print helper
-
-int  getMinBlobPx();
-void setMinBlobPx(int px);

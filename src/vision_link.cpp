@@ -12,7 +12,6 @@
 
 static Communicator  g_comm(Serial1, LINK_RX_PIN, LINK_TX_PIN, LINK_BAUD);
 static QueueHandle_t g_mailbox = nullptr;
-static TaskHandle_t  g_task    = nullptr;
 static volatile bool g_enabled = true;
 
 static volatile uint32_t g_sent    = 0;
@@ -117,7 +116,7 @@ bool visionLinkBegin() {
     g_comm.begin();
 
     BaseType_t ok = xTaskCreatePinnedToCore(linkTask, "vision_link", LINK_TASK_STACK,
-                                            nullptr, LINK_TASK_PRIO, &g_task, LINK_CORE);
+                                            nullptr, LINK_TASK_PRIO, nullptr, LINK_CORE);
     if (ok != pdPASS) {
         Serial.println("[LINK] Failed to start link task -- robot link disabled.");
         vQueueDelete(g_mailbox);

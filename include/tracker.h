@@ -21,8 +21,7 @@
 // No <Arduino.h>: host-tested.
 // ================================================================
 
-void trackerSetDefaults();
-void trackerReset();
+void trackerSetDefaults();   // also clears all tracks
 
 // Feeds one frame of filtered candidates in and produces the public result.
 // Call exactly once per frame - the M-of-N history advances on every call.

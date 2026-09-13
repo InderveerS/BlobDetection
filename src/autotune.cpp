@@ -31,26 +31,26 @@ static const ColorPrior COLOR_PRIORS[COLOR_COUNT] = {
     /* YELLOW */ { 28, 15 },   // kept narrow on purpose - see README on yellow vs. white bg
 };
 
-#define SEARCH_S_MIN          90   // reject low-saturation pixels. This is the main
-                                     // defense against a warm-lit white/grey background
-                                     // reading as a yellowish hue - real plastic/fabric
-                                     // color is almost always more saturated than that.
-                                     // It is also the effective floor on any saved sMin.
+// Low-saturation pixels are rejected while searching. This is the main defence
+// against a warm-lit white/grey background reading as a yellowish hue - real
+// plastic/fabric colour is almost always more saturated than that. It is also
+// the effective floor on any saved sMin.
+#define SEARCH_S_MIN           90
 #define SEARCH_V_MIN           35
 #define SEARCH_V_MAX          250
 #define TUNE_MIN_COMPONENT_PX 250   // ignore tiny noise specks as "the blob"
 
-// Padding applied to the percentile range. Hue gets more than it used to (2):
-// RGB565's 5-bit red/blue quantise hue into multi-degree steps, so a tight pad
-// produced ranges that missed pixels of the very object they were tuned on.
+// Padding applied to the percentile range. Hue needs a generous pad: RGB565's
+// 5-bit red/blue quantise hue into multi-degree steps, so a tight pad produces
+// ranges that miss pixels of the very object they were tuned on.
 #define TUNE_PAD_H              4
 #define TUNE_PAD_S             12
 #define TUNE_PAD_V             15
 
-// Percentiles used instead of min/max. The old code took the absolute extremes
-// of every pixel in the blob, so ONE specular highlight and ONE shadowed edge
-// pixel set the whole range - and the rolling median across frames couldn't
-// rescue it, because every sample was already an extreme.
+// Percentiles rather than min/max: with absolute extremes, ONE specular
+// highlight and ONE shadowed edge pixel would set the whole range, and the
+// rolling median across frames couldn't rescue it because every sample would
+// already be an extreme.
 #define PCT_LO                  5
 #define PCT_HI                 95
 
@@ -87,12 +87,6 @@ static int rbCount = 0, rbNext = 0;
 static uint32_t g_histH[180];
 static uint32_t g_histS[256];
 static uint32_t g_histV[256];
-
-void autotuneInit() {
-    // Nothing to allocate any more. This used to reserve 384 KB of PSRAM for a
-    // private flood-fill (a visited grid plus a worst-case stack); tuning now
-    // reuses the same connected-component scanner detection uses.
-}
 
 bool tuneIsActive() { return g_active; }
 
@@ -196,12 +190,12 @@ void tuneProcessFrame(camera_fb_t *fb) {
 
     const ColorPrior &prior = COLOR_PRIORS[g_color];
     const uint8_t    *buf   = fb->buf;
+    const uint8_t    *lut   = lutData();
 
     // The LUT currently holds the search prior, so the scanner finds exactly
-    // the candidate pixels the old hand-rolled flood fill used to.
+    // the pixels that fall inside it.
     BlobComponent *comps = blobScratch();
-    BlobScanStats  st;
-    int n = blobScan(buf, lutData(), fullFrameRoi(), comps, MAX_COMPONENTS, &st);
+    int n = blobScan(buf, lut, fullFrameRoi(), comps, MAX_COMPONENTS, nullptr);
 
     int best = -1;
     for (int i = 0; i < n; i++)
@@ -235,7 +229,7 @@ void tuneProcessFrame(camera_fb_t *fb) {
             const uint8_t *p = buf + ((size_t)y * FRAME_W + b.x0) * 2;
             for (int x = b.x0; x <= b.x1; x++, p += 2) {
                 uint16_t px = ((uint16_t)p[0] << 8) | p[1];
-                if (lutColorOf(lutData()[px]) == 0) continue;   // not a candidate
+                if (lutColorOf(lut[px]) == 0) continue;   // not a candidate
                 int h, s, v;
                 rgb565ToHsv(px, h, s, v);
                 g_histH[shiftHue(h, prior.center)]++;
